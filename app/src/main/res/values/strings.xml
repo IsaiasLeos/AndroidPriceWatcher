@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Price Watcher</string>
+    <string name="buttonRefresh">Refresh</string>
+    <string name="name">Name: </string>
+    <string name="initial">Initial Price: </string>
+    <string name="current">Current Price: </string>
+    <string name="change">Change: </string>
+    <string name="url">URL: </string>
+    <string name="browser">Browser </string>
+</resources>
