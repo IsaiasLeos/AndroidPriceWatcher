@@ -2,9 +2,17 @@
     <string name="app_name">Price Watcher</string>
     <string name="buttonRefresh">Refresh</string>
     <string name="name">Name: </string>
+    <string name="price">Price: </string>
     <string name="initial">Initial Price: </string>
     <string name="current">Current Price: </string>
     <string name="change">Change: </string>
     <string name="url">URL: </string>
-    <string name="browser">Browser </string>
+    <string name="browse">Browse </string>
+    <string name="category">Category: </string>
+    <string name="description">Description: </string>
+    <string name="date">Date Added: </string>
+    <string name="errorMessage">Error: </string>
+    <string name="delete">Delete</string>
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
 </resources>

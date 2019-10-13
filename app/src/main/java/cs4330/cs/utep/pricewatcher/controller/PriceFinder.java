@@ -1,4 +1,4 @@
-package cs4330.cs.utep.pricewatcher.view;
+package cs4330.cs.utep.pricewatcher.controller;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

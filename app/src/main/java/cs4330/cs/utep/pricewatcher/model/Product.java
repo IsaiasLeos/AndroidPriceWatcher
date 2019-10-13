@@ -1,7 +1,11 @@
 package cs4330.cs.utep.pricewatcher.model;
 
+import android.annotation.SuppressLint;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * This class holds information about the current product and changes done to
@@ -17,6 +21,7 @@ public class Product {
     private double change;
     private double startingPrice;
 
+    private String date;
     private String sharedURL;
 
     /**
@@ -34,7 +39,8 @@ public class Product {
      * @param change        change between previous price and current
      * @param startingPrice initial price of the product
      */
-    public Product(String url, String name, double currentPrice, double change, double startingPrice) {
+    public Product(String url, String name, double currentPrice, double startingPrice, double change) {
+        this.date = getCurrentDate();
         this.url = url;
         this.name = name;
         this.currentPrice = currentPrice;
@@ -52,7 +58,7 @@ public class Product {
      */
     public void checkPrice(double price) {
         setCurrentPrice(price);
-        setChange(new BigDecimal(calcChange(getInitialPrice(), getCurrentPrice())).setScale(2, RoundingMode.CEILING).doubleValue());
+        setChange(new BigDecimal(calcChange(getCurrentPrice(), getInitialPrice())).setScale(2, RoundingMode.CEILING).doubleValue());
     }
 
     /**
@@ -66,6 +72,24 @@ public class Product {
         return ((newPrice - initialPrice) / initialPrice) * 100;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    /**
+     * Gets the current date.
+     *
+     * @return current date in MM/dd/yyyy format
+     */
+    private String getCurrentDate() {
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+        Date date = new Date(System.currentTimeMillis());
+        return formatter.format(date);
+    }
 
     /**
      * Sets a boolean that indicates if the current Product can play a sound.
