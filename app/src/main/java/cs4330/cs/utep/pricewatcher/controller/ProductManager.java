@@ -18,15 +18,20 @@ public class ProductManager {
     }
 
     /**
-     * Obtain new price for every item inside the ProductManager.
+     * Obtain new price for every product inside the ProductManager.
      */
-    public void refreshItemList() {
+    public void refreshProductList() {
         for (Product temp : arrOfProducts) {
             temp.checkPrice(priceFinder.getPrice(temp.getCurrentPrice()));
         }
     }
 
-    public void refreshItem(int index) {
+    /**
+     * Refresh the price of a select product given the index.
+     *
+     * @param index
+     */
+    public void refreshProduct(int index) {
         Product temp = arrOfProducts.get(index);
         temp.checkPrice(priceFinder.getPrice(temp.getCurrentPrice()));
     }

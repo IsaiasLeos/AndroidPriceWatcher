@@ -7,7 +7,7 @@ import java.util.Random;
 public class PriceFinder {
 
     /**
-     * Generate a simulated price of an item between the value given.
+     * Generate a simulated price of an product between the value given.
      *
      * @param medValue value to randomize within ranges
      * @return random double

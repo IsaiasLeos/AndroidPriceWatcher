@@ -20,9 +20,7 @@ public class Product {
     private double currentPrice;
     private double change;
     private double startingPrice;
-    private String description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel nisi ac nisl consectetur vulputate. Maecenas id placerat justo. Morbi sit amet purus tempus, iaculis tortor nec, ultrices lorem. Vivamus vel hendrerit massa, quis consectetur diam. In tincidunt est sit amet sapien aliquam interdum. Ut dapibus eros et purus dapibus dapibus eu convallis eros. Proin ultrices eu odio at porta. Phasellus id libero et dui imperdiet semper quis at arcu. Sed ut libero eu lectus porttitor fringilla. Quisque at leo cursus, pretium turpis et, luctus ex. Aenean rhoncus velit nec nulla finibus fermentum.";
     private String date;
-    private String sharedURL;
 
     /**
      * Default Constructor
@@ -76,10 +74,6 @@ public class Product {
         return date;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     /**
      * Gets the current date.
      *
@@ -94,14 +88,14 @@ public class Product {
     /**
      * Sets a boolean that indicates if the current Product can play a sound.
      *
-     * @return returns the current URL of the item being watched.
+     * @return returns the current URL of the product being watched.
      */
     public String getURL() {
         return url;
     }
 
     /**
-     * Replaces the current URL of the item being watched.
+     * Replaces the current URL of the product being watched.
      *
      * @param url the name of the URL that will be replacing the current item
      *            name.
@@ -111,33 +105,33 @@ public class Product {
     }
 
     /**
-     * @return returns the name of the current item.
+     * @return returns the name of the current product.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Replaces the current Name of the item being watched.
+     * Replaces the current Name of the product being watched.
      *
-     * @param name the name of the item that will be replacing the current item.
+     * @param name the name of the product that will be replacing the current item.
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * @return returns the price of the current item.
+     * @return returns the price of the current product.
      */
     public double getCurrentPrice() {
         return currentPrice;
     }
 
     /**
-     * Replaces the current Price of the item being watched.
+     * Replaces the current Price of the product being watched.
      *
      * @param price the price that will be replacing the current price of the
-     *              item.
+     *              product.
      */
     public void setCurrentPrice(double price) {
         this.currentPrice = price;
@@ -170,20 +164,12 @@ public class Product {
     }
 
     /**
-     * Sets the initial price of an item.
+     * Sets the initial price of an product.
      *
      * @param price override the starting price of the product
      */
     public void setStartingPrice(double price) {
         this.startingPrice = price;
-    }
-
-    public String getSharedURL() {
-        return sharedURL;
-    }
-
-    public void setSharedURL(String sharedURL) {
-        this.sharedURL = sharedURL;
     }
 
     /**
@@ -210,13 +196,5 @@ public class Product {
             newUrl = new StringBuilder(newUrl.substring(0, newUrl.length() - 1));
         }
         setURL(newUrl.toString());
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 }
