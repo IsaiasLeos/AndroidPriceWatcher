@@ -11,7 +11,7 @@
     <string name="category">Category: </string>
     <string name="description">Description: </string>
     <string name="date"><b>Date Added: </b></string>
-    <string name="errorMessage">Error</string>
+    <string name="errorMessage">Error: Please input valid information.</string>
     <string name="delete">Delete</string>
     <string name="add">Add</string>
     <string name="edit">Edit</string>

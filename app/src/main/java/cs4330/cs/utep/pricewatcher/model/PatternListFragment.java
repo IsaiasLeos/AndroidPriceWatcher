@@ -130,7 +130,7 @@ public class PatternListFragment extends ListFragment {
             TextView view = row.findViewById(R.id.productNameString);
             FrameLayout layout = row.findViewById(R.id.frameLayout);
             layout.setOnLongClickListener((view1) -> createPopup(view1, position));
-            layout.setOnClickListener((view1) -> patternClicked(product1));
+            layout.setOnClickListener((view1) -> patternClicked(item));
             view.setText(Html.fromHtml("<b>" + item.getName() + "</b>"));
             view = row.findViewById(R.id.productChangeDouble);
             String changeString = "0.00 %";
