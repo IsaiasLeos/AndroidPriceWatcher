@@ -5,13 +5,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.browser.customtabs.CustomTabsIntent;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cs4330.cs.utep.pricewatcher.R;
-import cs4330.cs.utep.pricewatcher.model.PatternListFragment;
+import cs4330.cs.utep.pricewatcher.model.ListAdapter;
 import cs4330.cs.utep.pricewatcher.model.Product;
 
 /**
@@ -21,16 +25,18 @@ import cs4330.cs.utep.pricewatcher.model.Product;
  * @author Isaias Leos
  */
 public class MainActivity extends AppCompatActivity implements NewProductDialogActivity.NewProductDialogListener,
-        EditProductDialogActivity.EditProductDialogListener, PatternListFragment.Listener {
+        EditProductDialogActivity.EditProductDialogListener, ListAdapter.Listener {
 
-    //List fragment, contains list, modifies, adds, and deletes
-    PatternListFragment fragment;
+    private static List<Product> listOfItems = new ArrayList<>();
+    private Product product1 = new Product("https://www.amazon.com/LG-V35-ThinQ-Alexa-Hands-Free/dp/B07D46BMYT", "LG V35", 399.99, 399.99, 0.00);
+    private Product product2 = new Product("https://www.ebay.com/itm/Lenovo-Flex-5-Laptop-15-6-Touch-Screen-8th-Gen-Intel-Core-i7-8GB-Memory/193136537648", "Lenovo-Flex-5-Laptop", 999.99, 999.99, 0.00);
+    private ListView productView;
 
     /**
      * Initializes the layout, creates the toolbar, and handles sharing of a link from another
      * application.
      *
-     * @param savedInstanceState
+     * @param savedInstanceState instance saved
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +45,12 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         //Set the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //Initialize the list layout
-        fragment = (PatternListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
-        //Handle link sharing from other applications
+        productView = findViewById(R.id.listView);
+        if (listOfItems.size() <= 0) {
+            listOfItems.add(product1);
+            listOfItems.add(product2);
+        }
+        displayList();
         handleShare(getIntent());
     }
 
@@ -58,6 +67,14 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     }
 
     /**
+     * Refresh data within the adapter.
+     */
+    private void displayList() {
+        ListAdapter listAdapter = new ListAdapter(this, listOfItems);
+        productView.setAdapter(listAdapter);
+    }
+
+    /**
      * This method is called whenever an icon is clicked from the toolbar.
      * Handles each button's action.
      *
@@ -68,21 +85,27 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                fragment.getAll().refreshProductList();
-                fragment.refreshList();
+                for (int i = 0; i < listOfItems.size(); i++) {
+                    listOfItems.get(i).refreshPrice();
+                    displayList();
+                }
                 return true;
             case R.id.action_add:
                 openNewProductDialog(null);
                 return true;
-            case R.id.action_open_find:
-                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-                CustomTabsIntent customTabsIntent = builder.build();
-                builder.addDefaultShareMenuItem();
-                customTabsIntent.launchUrl(this, Uri.parse("https://www.amazon.com"));
+            case R.id.openAmazon:
+                toBrowser("https://www.amazon.com");
+                return true;
+            case R.id.openEbay:
+                toBrowser("https://www.ebay.com");
+                return true;
+            case R.id.openWalmart:
+                toBrowser("https://www.walmart.com");
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     /**
      * This method creates a dialog window to add a new product.
@@ -108,8 +131,9 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         EditProductDialogActivity dialog = new EditProductDialogActivity();
         Bundle bundle = new Bundle();
         bundle.putInt("index", index);
-        bundle.putString("currentName", fragment.get(index).getName());
-        bundle.putString("currentUrl", fragment.get(index).getURL());
+        bundle.putString("currentName", listOfItems.get(index).getName());
+        bundle.putString("currentUrl", listOfItems.get(index).getURL());
+        bundle.putString("currentPrice", String.valueOf(listOfItems.get(index).getInitialPrice()));
         dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "Edit item");
     }
@@ -123,8 +147,8 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      */
     @Override
     public void addProduct(String name, String url, String price) {
-        fragment.add(new Product(url, name, Double.parseDouble(price), Double.parseDouble(price), 0.00));
-        fragment.refreshList();
+        listOfItems.add(new Product(url, name, Double.parseDouble(price), Double.parseDouble(price), 0.00));
+        displayList();
     }
 
     /**
@@ -135,10 +159,11 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      * @param index location within the list
      */
     @Override
-    public void updateProduct(String name, String url, int index) {
-        fragment.get(index).setName(name);
-        fragment.get(index).setURL(url);
-        fragment.refreshList();
+    public void updateProduct(String name, String url, String price, int index) {
+        listOfItems.get(index).setName(name);
+        listOfItems.get(index).setURL(url);
+        listOfItems.get(index).setInitialPrice(Double.parseDouble(price));
+        displayList();
     }
 
 
@@ -148,8 +173,8 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      * @param index location within the list
      */
     public void deleteProduct(int index) {
-        fragment.remove(index);
-        fragment.refreshList();
+        listOfItems.remove(index);
+        displayList();
     }
 
     /**
@@ -164,12 +189,13 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     /**
      * Open a chrome custom tab given the product.
      *
-     * @param product product
+     * @param url product's url
      */
-    public void toBrowser(Product product) {
+    public void toBrowser(String url) {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.addDefaultShareMenuItem();
         CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.launchUrl(this, Uri.parse(product.getURL()));
+        customTabsIntent.launchUrl(this, Uri.parse(url));
     }
 
     /**
@@ -177,8 +203,17 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      *
      * @param index
      */
-    public void openProductURL(int index) {
-        toBrowser(fragment.get(index));
+    public void openProductURL(int index, boolean isInternal) {
+        if (isInternal) {
+            toBrowser(listOfItems.get(index).getURL());
+        } else {
+            shouldOverrideUrlLoading(listOfItems.get(index).getURL());
+        }
+    }
+
+    public void shouldOverrideUrlLoading(String url) {
+        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(i);
     }
 
     /**
@@ -188,8 +223,8 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      */
     @Override
     public void refreshProduct(int index) {
-        fragment.getAll().refreshProduct(index);
-        fragment.refreshList();
+        listOfItems.get(index).refreshPrice();
+        displayList();
     }
 
 

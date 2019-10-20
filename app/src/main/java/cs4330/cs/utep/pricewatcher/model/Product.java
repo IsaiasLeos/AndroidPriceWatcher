@@ -7,6 +7,8 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import cs4330.cs.utep.pricewatcher.controller.PriceFinder;
+
 /**
  * This class holds information about the current product and changes done to
  * it.
@@ -15,6 +17,7 @@ import java.util.Date;
  */
 public class Product {
 
+    private PriceFinder priceFinder = new PriceFinder();
     private String url;
     private String name;
     private double currentPrice;
@@ -168,8 +171,13 @@ public class Product {
      *
      * @param price override the starting price of the product
      */
-    public void setStartingPrice(double price) {
+    public void setInitialPrice(double price) {
         this.startingPrice = price;
+    }
+
+
+    public void refreshPrice() {
+        checkPrice(priceFinder.getPrice(getCurrentPrice()));
     }
 
     /**
