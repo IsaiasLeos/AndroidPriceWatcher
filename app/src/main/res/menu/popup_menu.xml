@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/popDelete"
-        android:title="@string/delete" />
+        android:id="@+id/popRefreshItem"
+        android:title="@string/refresh" />
     <item
         android:id="@+id/popEdit"
         android:title="@string/edit" />
     <item
         android:id="@+id/popBrowse"
         android:title="@string/browse" />
+    <item
+        android:id="@+id/popDelete"
+        android:title="@string/delete" />
 </menu>

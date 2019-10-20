@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements NewItemDialogActi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                fragment.getAll().reloadManager();
+                fragment.getAll().refreshItemList();
                 fragment.refreshList();
                 return true;
             case R.id.action_add:
@@ -72,11 +72,6 @@ public class MainActivity extends AppCompatActivity implements NewItemDialogActi
         fragment.refreshList();
     }
 
-    public void toBrowser(Product product) {
-        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.launchUrl(this, Uri.parse(product.getURL()));
-    }
 
     public void deleteItem(int index) {
         fragment.remove(index);
@@ -93,9 +88,22 @@ public class MainActivity extends AppCompatActivity implements NewItemDialogActi
         dialog.show(getSupportFragmentManager(), "Edit item");
     }
 
+    public void toBrowser(Product product) {
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(this, Uri.parse(product.getURL()));
+    }
+
     public void displayWebsite(int index) {
         toBrowser(fragment.get(index));
     }
+
+    @Override
+    public void refreshItem(int index) {
+        fragment.getAll().refreshItem(index);
+        fragment.refreshList();
+    }
+
 
     private void handleSendText(Intent intent) {
         String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
@@ -107,7 +115,6 @@ public class MainActivity extends AppCompatActivity implements NewItemDialogActi
     private void handleShare(Intent intent) {
         String action = intent.getAction();
         String type = intent.getType();
-
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if ("text/plain".equals(type)) {
                 handleSendText(intent);

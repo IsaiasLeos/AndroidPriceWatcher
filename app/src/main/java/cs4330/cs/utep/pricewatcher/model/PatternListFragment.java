@@ -3,16 +3,20 @@ package cs4330.cs.utep.pricewatcher.model;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.fragment.app.ListFragment;
 
 import java.util.List;
@@ -72,11 +76,19 @@ public class PatternListFragment extends ListFragment {
                 case R.id.popEdit:
                     listener.editItem(position);
                     return true;
+                case R.id.popRefreshItem:
+                    listener.refreshItem(position);
                 default:
                     return false;
             }
         });
         return false;
+    }
+
+    private void patternClicked(Product product) {
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(Objects.requireNonNull(getContext()), Uri.parse(product.getURL()));
     }
 
     public interface Listener {
@@ -85,6 +97,8 @@ public class PatternListFragment extends ListFragment {
         void editItem(int index);
 
         void displayWebsite(int index);
+
+        void refreshItem(int index);
     }
 
     private class ProductListAdapter extends ArrayAdapter<Product> {
@@ -103,24 +117,35 @@ public class PatternListFragment extends ListFragment {
                     : LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.simple_list_product, parent, false);
             Product item = productList.get(position);
+            ImageView image = row.findViewById(R.id.imageView);
+            if (item.getURL().contains("ebay")) {
+                image.setImageResource(R.drawable.ebay);
+            }
+            if (item.getURL().contains("amazon")) {
+                image.setImageResource(R.drawable.amazon);
+            }
+            if (item.getURL().contains("walmart")) {
+                image.setImageResource(R.drawable.walmart);
+            }
             TextView view = row.findViewById(R.id.productNameString);
             FrameLayout layout = row.findViewById(R.id.frameLayout);
             layout.setOnLongClickListener((view1) -> createPopup(view1, position));
-            view.setText(item.getName());
+            layout.setOnClickListener((view1) -> patternClicked(product1));
+            view.setText(Html.fromHtml("<b>" + item.getName() + "</b>"));
             view = row.findViewById(R.id.productChangeDouble);
             String changeString = "0.00 %";
             if (item.getChange() > 0.0) {
-                changeString = "-" + Math.abs(item.getChange()) + " %";
+                changeString = "-" + Math.abs(item.getChange()) + "%";
                 view.setTextColor(Color.GREEN);
             } else if (item.getChange() < 0.0) {
-                changeString = "+" + Math.abs(item.getChange()) + " %";
+                changeString = "+" + Math.abs(item.getChange()) + "%";
                 view.setTextColor(Color.RED);
             }
             view.setText(changeString);
             view = row.findViewById(R.id.productCurrentPriceDouble);
-            view.setText(Double.toString(item.getCurrentPrice()));
+            view.setText("$" + item.getCurrentPrice());
             view = row.findViewById(R.id.productInitialPriceDouble);
-            view.setText(Double.toString(item.getInitialPrice()));
+            view.setText("$" + item.getInitialPrice());
             view = row.findViewById(R.id.dateAddedString);
             view.setText(item.getDate());
             return row;

@@ -20,7 +20,7 @@ public class Product {
     private double currentPrice;
     private double change;
     private double startingPrice;
-
+    private String description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel nisi ac nisl consectetur vulputate. Maecenas id placerat justo. Morbi sit amet purus tempus, iaculis tortor nec, ultrices lorem. Vivamus vel hendrerit massa, quis consectetur diam. In tincidunt est sit amet sapien aliquam interdum. Ut dapibus eros et purus dapibus dapibus eu convallis eros. Proin ultrices eu odio at porta. Phasellus id libero et dui imperdiet semper quis at arcu. Sed ut libero eu lectus porttitor fringilla. Quisque at leo cursus, pretium turpis et, luctus ex. Aenean rhoncus velit nec nulla finibus fermentum.";
     private String date;
     private String sharedURL;
 
@@ -212,4 +212,11 @@ public class Product {
         setURL(newUrl.toString());
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

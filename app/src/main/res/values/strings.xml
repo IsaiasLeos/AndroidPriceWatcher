@@ -3,16 +3,18 @@
     <string name="buttonRefresh">Refresh</string>
     <string name="name">Name: </string>
     <string name="price">Price: </string>
-    <string name="initial">Initial Price: </string>
-    <string name="current">Current Price: </string>
-    <string name="change">Change: </string>
+    <string name="initial"><b>Initial Price: </b></string>
+    <string name="current"><b>Current Price: </b></string>
+    <string name="change"><b>Change: </b></string>
     <string name="url">URL: </string>
     <string name="browse">Browse </string>
     <string name="category">Category: </string>
     <string name="description">Description: </string>
-    <string name="date">Date Added: </string>
-    <string name="errorMessage">Error: </string>
+    <string name="date"><b>Date Added: </b></string>
+    <string name="errorMessage">Error</string>
     <string name="delete">Delete</string>
     <string name="add">Add</string>
     <string name="edit">Edit</string>
+    <string name="refresh">Refresh</string>
+    <string name="Lorem_Ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel nisi ac nisl consectetur vulputate. Maecenas id placerat justo. Morbi sit amet purus tempus, iaculis tortor nec, ultrices lorem. Vivamus vel hendrerit massa, quis consectetur diam. In tincidunt est sit amet sapien aliquam interdum. Ut dapibus eros et purus dapibus dapibus eu convallis eros. Proin ultrices eu odio at porta. Phasellus id libero et dui imperdiet semper quis at arcu.</string>
 </resources>
