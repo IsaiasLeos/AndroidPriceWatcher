@@ -48,26 +48,5 @@
         android:ems="10"
         android:inputType="textPersonName" />
 
-    <TextView
-        android:id="@+id/editPrice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginRight="16dp"
-        android:text="@string/price" />
-
-    <EditText
-        android:id="@+id/editPriceDouble"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginRight="16dp"
-        android:ems="10"
-        android:inputType="numberDecimal" />
-
 </LinearLayout>
 

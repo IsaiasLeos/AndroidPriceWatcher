@@ -26,7 +26,6 @@ public class NewProductDialogActivity extends AppCompatDialogFragment {
     //Text fields displayed in the dialog
     private EditText productName;
     private EditText productURL;
-    private EditText productPrice;
     //Listener used to call methods inside an activity
     private NewProductDialogListener listener;
 
@@ -43,7 +42,6 @@ public class NewProductDialogActivity extends AppCompatDialogFragment {
         @SuppressLint("InflateParams") View view = inflater.inflate(R.layout.activity_new_product_dialog, null);
         productName = view.findViewById(R.id.editNameString);
         productURL = view.findViewById(R.id.editURLString);
-        productPrice = view.findViewById(R.id.editPriceDouble);
         builder.setView(view).setTitle("Adding Product...")
                 //Action when user presses cancel button.
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
@@ -51,9 +49,8 @@ public class NewProductDialogActivity extends AppCompatDialogFragment {
                 .setPositiveButton("OK", (dialog, which) -> {
                     String name = productName.getText().toString();
                     String url = productURL.getText().toString();
-                    String price = productPrice.getText().toString();
-                    if (!name.equals("") && !url.equals("") && !price.equals("")) {
-                        listener.addProduct(name, url, price);
+                    if (!name.equals("") && !url.equals("")) {
+                        listener.addProduct(name, url);
                     } else {
                         //Inform user that an activity was empty
                         Toast.makeText(getContext(), getString(R.string.errorMessage), Toast.LENGTH_SHORT).show();
@@ -81,6 +78,6 @@ public class NewProductDialogActivity extends AppCompatDialogFragment {
      * Interface used to link the activity to the listener.
      */
     public interface NewProductDialogListener {
-        void addProduct(String name, String url, String price);
+        void addProduct(String name, String url);
     }
 }

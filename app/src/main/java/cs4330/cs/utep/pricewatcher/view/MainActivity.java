@@ -12,8 +12,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import cs4330.cs.utep.pricewatcher.R;
 import cs4330.cs.utep.pricewatcher.model.ListAdapter;
@@ -33,6 +36,11 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     private Product product1 = new Product("https://www.amazon.com/LG-V35-ThinQ-Alexa-Hands-Free/dp/B07D46BMYT", "LG V35", 399.99, 399.99, 0.00);
     private Product product2 = new Product("https://www.ebay.com/itm/Lenovo-Flex-5-Laptop-15-6-Touch-Screen-8th-Gen-Intel-Core-i7-8GB-Memory/193136537648", "Lenovo-Flex-5-Laptop", 999.99, 999.99, 0.00);
     private ListView productView;
+
+    public static double getRandom() {
+        Random random = new Random();
+        return (new BigDecimal(random.nextInt(1000 - 1 + 1) + 1).setScale(2, RoundingMode.CEILING).doubleValue());
+    }
 
     /**
      * Initializes the layout, creates the toolbar, and handles sharing of a link from another
@@ -118,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         return super.onOptionsItemSelected(item);
     }
 
-
     /**
      * This method creates a dialog window to add a new product.
      *
@@ -153,13 +160,13 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     /**
      * This method adds a new product and inserts into the fragment list.
      *
-     * @param name  name of product
-     * @param url   url of product
-     * @param price initial price of product
+     * @param name name of product
+     * @param url  url of product
      */
     @Override
-    public void addProduct(String name, String url, String price) {
-        listOfItems.add(new Product(url, name, Double.parseDouble(price), Double.parseDouble(price), 0.00));
+    public void addProduct(String name, String url) {
+        double ran = getRandom();
+        listOfItems.add(new Product(url, name, ran, ran, 0.00));
         renewList();
     }
 
@@ -171,10 +178,9 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      * @param index location within the list
      */
     @Override
-    public void updateProduct(String name, String url, String price, int index) {
+    public void updateProduct(String name, String url, int index) {
         listOfItems.get(index).setName(name);
         listOfItems.get(index).setURL(url);
-        listOfItems.get(index).setInitialPrice(Double.parseDouble(price));
         renewList();
     }
 

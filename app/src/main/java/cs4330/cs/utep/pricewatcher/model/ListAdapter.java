@@ -2,8 +2,9 @@ package cs4330.cs.utep.pricewatcher.model;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.Uri;
+import android.content.Intent;
 import android.text.Html;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,19 +16,14 @@ import android.widget.TextView;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuPopupHelper;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.browser.customtabs.CustomTabsIntent;
 
 import java.util.List;
 import java.util.Objects;
 
 import cs4330.cs.utep.pricewatcher.R;
+import cs4330.cs.utep.pricewatcher.view.DetailedActivity;
 
 public class ListAdapter extends ArrayAdapter<Product> {
-
-    /**
-     * Interfaces used to link the activity to the listener
-     */
-
 
     private final List<Product> productList;
     private Listener listener;
@@ -83,17 +79,6 @@ public class ListAdapter extends ArrayAdapter<Product> {
     }
 
     /**
-     * Launches custom chrome tab according to what item was clicked.
-     *
-     * @param url product's url
-     */
-    private void patternClicked(String url) {
-        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.launchUrl(Objects.requireNonNull(getContext()), Uri.parse(url));
-    }
-
-    /**
      * Generating an products's details and actions for a FragmentList.
      *
      * @param position    position of a product within the adapter
@@ -108,12 +93,10 @@ public class ListAdapter extends ArrayAdapter<Product> {
                 .inflate(R.layout.simple_list_product, parent, false);
         //Obtain the product from the given position
         Product product = productList.get(position);
-
-
         FrameLayout layout = row.findViewById(R.id.frameLayout);
         //Set actions from long pressing or quick pressing each layout
         layout.setOnLongClickListener((view1) -> createPopup(view1, position));
-        layout.setOnClickListener((view1) -> patternClicked(product.getURL()));
+        layout.setOnClickListener(v -> detailedClicked(position));
         TextView view = row.findViewById(R.id.productNameString);
         view.setText(Html.fromHtml(String.format("<b>%s</b><br>",
                 product.getName())));
@@ -130,6 +113,18 @@ public class ListAdapter extends ArrayAdapter<Product> {
                         "<b>Date Added:</b> %s", product.getInitialPrice(),
                 product.getCurrentPrice(), color, product.getChange(), product.getDate())));
         return row;
+    }
+
+    public void detailedClicked(int position) {
+        Log.e("Method: ", "patternClicked");
+        Intent i = new Intent(getContext(), DetailedActivity.class);
+        i.putExtra("name", productList.get(position).getName());
+        i.putExtra("init", productList.get(position).getInitialPrice());
+        i.putExtra("curr", productList.get(position).getCurrentPrice());
+        i.putExtra("change", productList.get(position).getChange());
+        i.putExtra("date", productList.get(position).getDate());
+        i.putExtra("url", productList.get(position).getURL());
+        getContext().startActivity(i);
     }
 
     public interface Listener {
