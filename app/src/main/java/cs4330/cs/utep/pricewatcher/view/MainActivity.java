@@ -10,6 +10,7 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         EditProductDialogActivity.EditProductDialogListener, ListAdapter.Listener {
 
     private static List<Product> listOfItems = new ArrayList<>();
+    SwipeRefreshLayout swipeRefreshLayout;
     private Product product1 = new Product("https://www.amazon.com/LG-V35-ThinQ-Alexa-Hands-Free/dp/B07D46BMYT", "LG V35", 399.99, 399.99, 0.00);
     private Product product2 = new Product("https://www.ebay.com/itm/Lenovo-Flex-5-Laptop-15-6-Touch-Screen-8th-Gen-Intel-Core-i7-8GB-Memory/193136537648", "Lenovo-Flex-5-Laptop", 999.99, 999.99, 0.00);
     private ListView productView;
@@ -42,6 +44,9 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
+
         //Set the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -50,7 +55,14 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
             listOfItems.add(product1);
             listOfItems.add(product2);
         }
-        displayList();
+        renewList();
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            for (int i = 0; i < listOfItems.size(); i++) {
+                listOfItems.get(i).refreshPrice();
+            }
+            renewList();
+            swipeRefreshLayout.setRefreshing(false);
+        });
         handleShare(getIntent());
     }
 
@@ -69,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     /**
      * Refresh data within the adapter.
      */
-    private void displayList() {
+    private void renewList() {
         ListAdapter listAdapter = new ListAdapter(this, listOfItems);
         productView.setAdapter(listAdapter);
     }
@@ -87,8 +99,8 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
             case R.id.action_refresh:
                 for (int i = 0; i < listOfItems.size(); i++) {
                     listOfItems.get(i).refreshPrice();
-                    displayList();
                 }
+                renewList();
                 return true;
             case R.id.action_add:
                 openNewProductDialog(null);
@@ -148,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     @Override
     public void addProduct(String name, String url, String price) {
         listOfItems.add(new Product(url, name, Double.parseDouble(price), Double.parseDouble(price), 0.00));
-        displayList();
+        renewList();
     }
 
     /**
@@ -163,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         listOfItems.get(index).setName(name);
         listOfItems.get(index).setURL(url);
         listOfItems.get(index).setInitialPrice(Double.parseDouble(price));
-        displayList();
+        renewList();
     }
 
 
@@ -174,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      */
     public void deleteProduct(int index) {
         listOfItems.remove(index);
-        displayList();
+        renewList();
     }
 
     /**
@@ -224,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     @Override
     public void refreshProduct(int index) {
         listOfItems.get(index).refreshPrice();
-        displayList();
+        renewList();
     }
 
 
