@@ -1,7 +1,6 @@
-package cs4330.cs.utep.pricewatcher.view;
+package cs4330.cs.utep.mypricewatcher.view;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -10,24 +9,26 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDialogFragment;
 
 import java.util.Objects;
 
-import cs4330.cs.utep.pricewatcher.R;
+import cs4330.cs.utep.mypricewatcher.R;
 
 /**
- * This class is used to display a dialog window that allows the user to edit a product.
+ * This class is used to display a dialog window that allows the user to edit an product.
  *
  * @author Isaias Leos
  */
-public class NewProductDialogActivity extends AppCompatDialogFragment {
+public class EditProductDialogActivity extends AppCompatDialogFragment {
 
     //Text fields displayed in the dialog
     private EditText productName;
     private EditText productURL;
     //Listener used to call methods inside an activity
-    private NewProductDialogListener listener;
+    private EditProductDialogListener listener;
 
     /**
      * Creates a custom Dialog Window.
@@ -35,31 +36,29 @@ public class NewProductDialogActivity extends AppCompatDialogFragment {
      * @param saveInstanceState last instance saved
      * @return instance to be displayed by the activity
      */
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle saveInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = Objects.requireNonNull(getActivity()).getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
+        LayoutInflater inflater = getActivity().getLayoutInflater();
         @SuppressLint("InflateParams") View view = inflater.inflate(R.layout.activity_new_product_dialog, null);
         productName = view.findViewById(R.id.editNameString);
         productURL = view.findViewById(R.id.editURLString);
-        builder.setView(view).setTitle("Adding Product...")
-                //Action when user presses cancel button.
+        builder.setView(view).setTitle("Edit Product")
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
-                //Action when user presses cancel button.
-                .setPositiveButton("OK", (dialog, which) -> {
+                .setPositiveButton("Ok", (dialog, which) -> {
                     String name = productName.getText().toString();
                     String url = productURL.getText().toString();
                     if (!name.equals("") && !url.equals("")) {
-                        listener.addProduct(name, url);
+                        assert getArguments() != null;
+                        listener.updateProduct(name, url, getArguments().getInt("index"));
                     } else {
-                        //Inform user that an activity was empty
                         Toast.makeText(getContext(), getString(R.string.errorMessage), Toast.LENGTH_SHORT).show();
                     }
                 });
-        //If a user shared a link from another app
-        if (getArguments() != null) {
-            productURL.setText(getArguments().getString("url"));
-        }
+        assert getArguments() != null;
+        productName.setText(getArguments().getString("currentName"));
+        productURL.setText(getArguments().getString("currentUrl"));
         return builder.create();
     }
 
@@ -69,15 +68,15 @@ public class NewProductDialogActivity extends AppCompatDialogFragment {
      * @param context context of which method its attached to
      */
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        listener = (NewProductDialogListener) context;
+        listener = (EditProductDialogListener) context;
     }
 
     /**
      * Interface used to link the activity to the listener.
      */
-    public interface NewProductDialogListener {
-        void addProduct(String name, String url);
+    public interface EditProductDialogListener {
+        void updateProduct(String name, String url, int index);
     }
 }

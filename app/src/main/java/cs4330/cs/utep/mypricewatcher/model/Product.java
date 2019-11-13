@@ -1,13 +1,13 @@
-package cs4330.cs.utep.pricewatcher.model;
+package cs4330.cs.utep.mypricewatcher.model;
 
 import android.annotation.SuppressLint;
+import android.graphics.drawable.Drawable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import cs4330.cs.utep.pricewatcher.controller.PriceFinder;
 
 /**
  * This class holds information about the current product and changes done to
@@ -17,19 +17,14 @@ import cs4330.cs.utep.pricewatcher.controller.PriceFinder;
  */
 public class Product {
 
-    private PriceFinder priceFinder = new PriceFinder();
     private String url;
     private String name;
     private double currentPrice;
     private double change;
     private double startingPrice;
     private String date;
-
-    /**
-     * Default Constructor
-     */
-    public Product() {
-    }
+    private Drawable icon;
+    private int id;
 
     /**
      * Creates a product given all the parameters.
@@ -47,9 +42,20 @@ public class Product {
         this.currentPrice = currentPrice;
         this.change = change;
         this.startingPrice = startingPrice;
-        if (this.url.contains("amazon")) {
-            urlSanitize();
-        }
+        urlSanitize();
+    }
+
+    public Product(String name, String url, double currentPrice, double change, String date, double startingPrice, int id) {
+        this.name = name;
+        this.url = url;
+        this.currentPrice = currentPrice;
+        this.change = change;
+        this.date = date;
+        this.startingPrice = startingPrice;
+        this.id = id;
+    }
+
+    public Product() {
     }
 
     /**
@@ -59,7 +65,7 @@ public class Product {
      */
     public void checkPrice(double price) {
         setCurrentPrice(price);
-        setChange(new BigDecimal(calcChange(getCurrentPrice(), getInitialPrice())).setScale(2, RoundingMode.CEILING).doubleValue());
+        setChange(new BigDecimal(calcChange(getInitialPrice(), getCurrentPrice())).setScale(2, RoundingMode.CEILING).doubleValue());
     }
 
     /**
@@ -83,9 +89,8 @@ public class Product {
      * @return current date in MM/dd/yyyy format
      */
     private String getCurrentDate() {
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
-        Date date = new Date(System.currentTimeMillis());
-        return formatter.format(date);
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        return sdf.format(new Date());
     }
 
     /**
@@ -176,10 +181,6 @@ public class Product {
     }
 
 
-    public void refreshPrice() {
-        checkPrice(priceFinder.getPrice(getCurrentPrice()));
-    }
-
     /**
      * Removes unwanted information from an Amazon Link. Enabling web scraping
      * to perform better.
@@ -195,6 +196,14 @@ public class Product {
                 String[] fixURL = sanitize[i].split("[?]");
                 sanitize[i] = fixURL[0];
             }
+            if (sanitize[i].contains("?has")) {
+                String[] fixURL = sanitize[i].split("[?]");
+                sanitize[i] = fixURL[0];
+            }
+            if (sanitize[i].contains("?athcpid")) {
+                String[] fixURL = sanitize[i].split("[?]");
+                sanitize[i] = fixURL[0];
+            }
             if (sanitize[i].equals("/") || sanitize[i].equals("//")) {
                 sanitize[i] = "";
             }
@@ -204,5 +213,21 @@ public class Product {
             newUrl = new StringBuilder(newUrl.substring(0, newUrl.length() - 1));
         }
         setURL(newUrl.toString());
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Drawable getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Drawable icon) {
+        this.icon = icon;
     }
 }

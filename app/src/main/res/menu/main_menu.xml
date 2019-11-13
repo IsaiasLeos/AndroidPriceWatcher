@@ -21,4 +21,10 @@
     <item
         android:id="@+id/openWalmart"
         android:title="@string/walmart" />
+    <item
+        android:id="@+id/openHomedepot"
+        android:title="@string/search_in_homedepot" />
+    <item
+        android:id="@+id/openAbout"
+        android:title="@string/about" />
 </menu>

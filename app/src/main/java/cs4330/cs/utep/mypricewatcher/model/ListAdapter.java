@@ -1,27 +1,28 @@
-package cs4330.cs.utep.pricewatcher.model;
+package cs4330.cs.utep.mypricewatcher.model;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.text.Html;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.view.menu.MenuPopupHelper;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.util.List;
 import java.util.Objects;
 
-import cs4330.cs.utep.pricewatcher.R;
-import cs4330.cs.utep.pricewatcher.view.DetailedActivity;
+import cs4330.cs.utep.mypricewatcher.R;
+import cs4330.cs.utep.mypricewatcher.view.ScrollingActivity;
 
 public class ListAdapter extends ArrayAdapter<Product> {
 
@@ -44,7 +45,7 @@ public class ListAdapter extends ArrayAdapter<Product> {
      * This creates a popup menu when an product is clicked and performs and
      * action depending on what item was clicked.
      *
-     * @param view
+     * @param view     current view
      * @param position The position of the clicked product in the list.
      */
     @SuppressLint("RestrictedApi")
@@ -67,6 +68,7 @@ public class ListAdapter extends ArrayAdapter<Product> {
                     return true;
                 case R.id.popRefreshProduct:
                     listener.refreshProduct(position);
+                    return true;
                 default:
                     return false;
             }
@@ -84,21 +86,33 @@ public class ListAdapter extends ArrayAdapter<Product> {
      * @param position    position of a product within the adapter
      * @param convertView old view to re-use
      * @param parent      parent view
-     * @return
+     * @return current view
      */
+    @NonNull
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View row = convertView != null ? convertView
                 : LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.simple_list_product, parent, false);
-        //Obtain the product from the given position
         Product product = productList.get(position);
-        FrameLayout layout = row.findViewById(R.id.frameLayout);
-        //Set actions from long pressing or quick pressing each layout
+        ImageView icon = row.findViewById(R.id.imageView2);
+        if (product.getURL().contains("amazon")) {
+            icon.setImageResource(R.drawable.amazon256);
+        }
+        if (product.getURL().contains("ebay")) {
+            icon.setImageResource(R.drawable.ebay256);
+        }
+        if (product.getURL().contains("walmart")) {
+            icon.setImageResource(R.drawable.walmart256);
+        }
+        if (product.getURL().contains("homedepot")) {
+            icon.setImageResource(R.drawable.homedepot256);
+        }
+        ConstraintLayout layout = row.findViewById(R.id.frameLayout);
         layout.setOnLongClickListener((view1) -> createPopup(view1, position));
         layout.setOnClickListener(v -> detailedClicked(position));
         TextView view = row.findViewById(R.id.productNameString);
-        view.setText(Html.fromHtml(String.format("<b>%s</b><br>",
+        view.setText(Html.fromHtml(String.format("<b>%s</b>",
                 product.getName())));
         TextView view2 = row.findViewById(R.id.description);
         String color = "";
@@ -107,17 +121,20 @@ public class ListAdapter extends ArrayAdapter<Product> {
         } else if (product.getChange() > 0) {
             color = "#FF0000";
         }
-        view2.setText(Html.fromHtml(String.format("<b>Initial Price:</b> $%s<br>" +
-                        "<b>Current Price:</b> $%.2f<br>" +
+        view2.setText(Html.fromHtml(String.format("<b>Current Price:</b> $%.2f<br>" +
                         "<b>Change:</b> <font color='%s'>%.2f%%<br></font> " +
-                        "<b>Date Added:</b> %s", product.getInitialPrice(),
+                        "<b>Date Added:</b> %s",
                 product.getCurrentPrice(), color, product.getChange(), product.getDate())));
         return row;
     }
 
-    public void detailedClicked(int position) {
-        Log.e("Method: ", "patternClicked");
-        Intent i = new Intent(getContext(), DetailedActivity.class);
+    /**
+     * Go into the scrolling activity to show more detail information about the application.
+     *
+     * @param position
+     */
+    private void detailedClicked(int position) {
+        Intent i = new Intent(getContext(), ScrollingActivity.class);
         i.putExtra("name", productList.get(position).getName());
         i.putExtra("init", productList.get(position).getInitialPrice());
         i.putExtra("curr", productList.get(position).getCurrentPrice());
@@ -127,7 +144,11 @@ public class ListAdapter extends ArrayAdapter<Product> {
         getContext().startActivity(i);
     }
 
+    /**
+     * Product listener interface for actions on the product.
+     */
     public interface Listener {
+
         void deleteProduct(int index);
 
         void editProduct(int index);

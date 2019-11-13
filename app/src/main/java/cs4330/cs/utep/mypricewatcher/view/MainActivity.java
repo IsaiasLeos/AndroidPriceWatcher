@@ -1,26 +1,31 @@
-package cs4330.cs.utep.pricewatcher.view;
+package cs4330.cs.utep.mypricewatcher.view;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import cs4330.cs.utep.pricewatcher.R;
-import cs4330.cs.utep.pricewatcher.model.ListAdapter;
-import cs4330.cs.utep.pricewatcher.model.Product;
+import cs4330.cs.utep.mypricewatcher.R;
+import cs4330.cs.utep.mypricewatcher.controller.DatabaseHandler;
+import cs4330.cs.utep.mypricewatcher.controller.PriceFinder;
+import cs4330.cs.utep.mypricewatcher.model.AboutActivity;
+import cs4330.cs.utep.mypricewatcher.model.ListAdapter;
+import cs4330.cs.utep.mypricewatcher.model.Product;
+import cs4330.cs.utep.mypricewatcher.model.WifiActivity;
 
 /**
  * Main activity used to display the list of products, watching prices and handles actions from opening
@@ -31,16 +36,13 @@ import cs4330.cs.utep.pricewatcher.model.Product;
 public class MainActivity extends AppCompatActivity implements NewProductDialogActivity.NewProductDialogListener,
         EditProductDialogActivity.EditProductDialogListener, ListAdapter.Listener {
 
-    private static List<Product> listOfItems = new ArrayList<>();
-    SwipeRefreshLayout swipeRefreshLayout;
-    private Product product1 = new Product("https://www.amazon.com/LG-V35-ThinQ-Alexa-Hands-Free/dp/B07D46BMYT", "LG V35", 399.99, 399.99, 0.00);
-    private Product product2 = new Product("https://www.ebay.com/itm/Lenovo-Flex-5-Laptop-15-6-Touch-Screen-8th-Gen-Intel-Core-i7-8GB-Memory/193136537648", "Lenovo-Flex-5-Laptop", 999.99, 999.99, 0.00);
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private List<Product> listOfItems = new ArrayList<>();
+    private Product productHandler = new Product();
     private ListView productView;
-
-    public static double getRandom() {
-        Random random = new Random();
-        return (new BigDecimal(random.nextInt(1000 - 1 + 1) + 1).setScale(2, RoundingMode.CEILING).doubleValue());
-    }
+    private PriceFinder priceFinder = new PriceFinder();
+    private DatabaseHandler dataBase;
+    private ProgressBar progressBar;
 
     /**
      * Initializes the layout, creates the toolbar, and handles sharing of a link from another
@@ -54,24 +56,40 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         setContentView(R.layout.activity_main);
         swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
-
-        //Set the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(ProgressBar.INVISIBLE);
         productView = findViewById(R.id.listView);
-        if (listOfItems.size() <= 0) {
-            listOfItems.add(product1);
-            listOfItems.add(product2);
-        }
-        renewList();
+        dataBase = new DatabaseHandler(this);
+        listOfItems = dataBase.getAll();
+        runOnUiThread(this::renewList);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             for (int i = 0; i < listOfItems.size(); i++) {
-                listOfItems.get(i).refreshPrice();
+                getPrice(i, false);
             }
             renewList();
             swipeRefreshLayout.setRefreshing(false);
         });
         handleShare(getIntent());
+    }
+
+    /**
+     * This method will be invoke when the activity that was hidden comes back to view on the
+     * screen to check if wifi is enabled and give a dialog box to force the user to enable it.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo mobile = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if (wifi.isConnected()) {
+        } else if (mobile.isConnected()) {
+            WifiActivity wifiActivity = new WifiActivity();
+            wifiActivity.setCancelable(false);
+            wifiActivity.show(getSupportFragmentManager(), "Wifi Menu");
+        }
     }
 
     /**
@@ -83,15 +101,7 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    /**
-     * Refresh data within the adapter.
-     */
-    private void renewList() {
-        ListAdapter listAdapter = new ListAdapter(this, listOfItems);
-        productView.setAdapter(listAdapter);
+        return super.onCreateOptionsMenu(menu);
     }
 
     /**
@@ -106,9 +116,8 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 for (int i = 0; i < listOfItems.size(); i++) {
-                    listOfItems.get(i).refreshPrice();
+                    getPrice(i, false);
                 }
-                renewList();
                 return true;
             case R.id.action_add:
                 openNewProductDialog(null);
@@ -122,8 +131,22 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
             case R.id.openWalmart:
                 toBrowser("https://www.walmart.com");
                 return true;
+            case R.id.openHomedepot:
+                toBrowser("https://www.homedepot.com");
+                return true;
+            case R.id.openAbout:
+                openAboutDialog();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Refresh data within the adapter.
+     */
+    private void renewList() {
+        ListAdapter listAdapter = new ListAdapter(this, listOfItems);
+        productView.setAdapter(listAdapter);
+        productView.deferNotifyDataSetChanged();
     }
 
     /**
@@ -142,6 +165,15 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     }
 
     /**
+     * Create a user dialog box to show who created the application.
+     */
+    private void openAboutDialog() {
+        Log.e("About", "Dialog Opened");
+        AboutActivity dialog = new AboutActivity();
+        dialog.show(getSupportFragmentManager(), "About Menu");
+    }
+
+    /**
      * This method creates a dialog window to edit a currently existing item from the list.
      *
      * @param index location within the list
@@ -152,7 +184,6 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
         bundle.putInt("index", index);
         bundle.putString("currentName", listOfItems.get(index).getName());
         bundle.putString("currentUrl", listOfItems.get(index).getURL());
-        bundle.putString("currentPrice", String.valueOf(listOfItems.get(index).getInitialPrice()));
         dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "Edit item");
     }
@@ -165,8 +196,19 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
      */
     @Override
     public void addProduct(String name, String url) {
-        double ran = getRandom();
-        listOfItems.add(new Product(url, name, ran, ran, 0.00));
+        Product toAdd = new Product(url, name, 0.00, 0.00, 0.00);
+        listOfItems.add(toAdd);
+        getPrice(listOfItems.indexOf(toAdd), true);
+    }
+
+    /**
+     * This method deletes a product from the list.
+     *
+     * @param index location within the list
+     */
+    public void deleteProduct(int index) {
+        dataBase.delete(listOfItems.get(index).getId());
+        listOfItems.remove(index);
         renewList();
     }
 
@@ -181,27 +223,61 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     public void updateProduct(String name, String url, int index) {
         listOfItems.get(index).setName(name);
         listOfItems.get(index).setURL(url);
+        dataBase.update(listOfItems.get(index));
         renewList();
     }
 
-
-    /**
-     * This method deletes a product from the list.
-     *
-     * @param index location within the list
-     */
-    public void deleteProduct(int index) {
-        listOfItems.remove(index);
-        renewList();
-    }
 
     /**
      * This method edits a product.
      *
-     * @param index location within the list
+     * @param index position of the product
      */
     public void editProduct(int index) {
         editProductDialog(index);
+    }
+
+    /**
+     * Refresh the price of a product given the index.
+     *
+     * @param index position of the product
+     */
+    @Override
+    public void refreshProduct(int index) {
+        getPrice(index, false);
+    }
+
+    /**
+     * Obtain the price of an item using the URL. Will check if the product is newly added or updating.
+     *
+     * @param index position of index
+     * @param isNew if item is new
+     */
+    public void getPrice(int index, boolean isNew) {
+        Thread priceThread = new Thread(() -> {
+            productHandler = priceFinder.getPrice(listOfItems.get(index), this);
+            Log.e("Handle Price", String.valueOf(productHandler.getCurrentPrice()));
+        });
+        priceThread.start();
+
+        progressBar.setVisibility(ProgressBar.VISIBLE);
+        Thread uiThread = new Thread(() -> {
+            while (true) {
+                if (!priceThread.isAlive()) {
+                    break;
+                }
+            }
+            runOnUiThread(() -> {
+                if (isNew) {
+                    dataBase.add(productHandler);
+                } else {
+                    dataBase.update(productHandler);
+                }
+                renewList();
+                progressBar.setVisibility(ProgressBar.INVISIBLE);
+            });
+        });
+        uiThread.start();
     }
 
     /**
@@ -219,37 +295,21 @@ public class MainActivity extends AppCompatActivity implements NewProductDialogA
     /**
      * Display the web page of the given index from the list.
      *
-     * @param index
+     * @param index position of the product
      */
     public void openProductURL(int index, boolean isInternal) {
         if (isInternal) {
             toBrowser(listOfItems.get(index).getURL());
         } else {
-            shouldOverrideUrlLoading(listOfItems.get(index).getURL());
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(listOfItems.get(index).getURL()));
+            startActivity(i);
         }
     }
-
-    public void shouldOverrideUrlLoading(String url) {
-        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(i);
-    }
-
-    /**
-     * Refresh the price of a product given the index.
-     *
-     * @param index
-     */
-    @Override
-    public void refreshProduct(int index) {
-        listOfItems.get(index).refreshPrice();
-        renewList();
-    }
-
 
     /**
      * Handles shared text and opens a new dialog to add the product to the current list.
      *
-     * @param intent
+     * @param intent position of the product
      */
     private void handleShare(Intent intent) {
         String action = intent.getAction();
